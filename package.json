@@ -2,13 +2,26 @@
   "name": "vscode-db-viewer",
   "displayName": "vscode-db-viewer",
   "description": "vscode db viewer extension",
-  "version": "0.0.1",
+  "version": "0.0.1-alpha1",
   "engines": {
     "vscode": "^1.74.0"
   },
   "categories": [
     "Other"
   ],
+  "keywords": [
+		"SQL",
+		"Database"
+	],
+  "bugs": {
+		"url": "https://github.com/BenLocal/vscode-db-viewer/issues",
+		"email": "807629978@qq.com"
+	},
+  "homepage": "https://github.com/BenLocal/vscode-db-viewer/blob/master/README.md",
+	"repository": {
+		"type": "git",
+		"url": "https://github.com/BenLocal/vscode-db-viewer.git"
+	},
   "activationEvents": [
     "onLanguage:sql",
     "workspaceContains:*.sql"
@@ -70,7 +83,7 @@
   "devDependencies": {
     "@types/mocha": "^10.0.10",
     "@types/node": "20.x",
-    "@types/vscode": "^1.99.0",
+    "@types/vscode": "^1.74.0",
     "@typescript-eslint/eslint-plugin": "^8.28.0",
     "@typescript-eslint/parser": "^8.28.0",
     "@vscode/test-cli": "^0.0.10",

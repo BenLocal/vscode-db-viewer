@@ -155,3 +155,5 @@ dist
 
 
 /target
+
+**/*.vsix
