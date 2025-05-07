@@ -2,7 +2,8 @@
   "name": "vscode-db-viewer",
   "displayName": "vscode-db-viewer",
   "description": "vscode db viewer extension",
-  "version": "0.0.1-alpha1",
+  "publisher": "shiben",
+  "version": "1.0.1-alpha1",
   "engines": {
     "vscode": "^1.74.0"
   },
@@ -78,7 +79,8 @@
     "pretest": "npm run compile-tests && npm run compile && npm run lint",
     "check-types": "tsc --noEmit",
     "lint": "eslint src",
-    "test": "vscode-test"
+    "test": "vscode-test",
+    "publich": "vsce publish"
   },
   "devDependencies": {
     "@types/mocha": "^10.0.10",
