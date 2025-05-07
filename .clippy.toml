@@ -1,0 +1,7 @@
+disallowed_macros = [
+    { path = "std::print", reason = "Please use logging instead of print statements" },
+    { path = "std::println", reason = "Please use logging instead of print statements" },
+    { path = "std::dbg", reason = "Please use logging instead of debug statements" },
+    { path = "std::eprint", reason = "Please use logging instead of print statements" },
+    { path = "std::eprintln", reason = "Please use logging instead of print statements" },
+]
