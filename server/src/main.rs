@@ -113,7 +113,15 @@ impl LanguageServer for Backend {
     async fn did_open(&self, params: tower_lsp::lsp_types::DidOpenTextDocumentParams) {
         let ast = match self.sql_parser.parse(&params.text_document.text) {
             Ok(ast) => ast,
-            Err(_) => return,
+            Err(_) => {
+                self.client
+                    .log_message(
+                        MessageType::ERROR,
+                        "Failed to parse SQL document".to_string(),
+                    )
+                    .await;
+                return;
+            }
         };
 
         {
@@ -139,7 +147,15 @@ impl LanguageServer for Backend {
         };
         let ast = match self.sql_parser.parse(&change.text) {
             Ok(ast) => ast,
-            Err(_) => return,
+            Err(_) => {
+                self.client
+                    .log_message(
+                        MessageType::ERROR,
+                        "Failed to parse SQL document".to_string(),
+                    )
+                    .await;
+                return;
+            }
         };
 
         {

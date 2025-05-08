@@ -1,9 +1,10 @@
 use std::vec;
 
+use chrono::format;
 use sqlparser::{ast::Spanned, dialect::GenericDialect};
-use tower_lsp::lsp_types::{CodeLens, Command, Position, Range};
+use tower_lsp::lsp_types::{CodeLens, Command, MessageType, Position, Range};
 
-use crate::constant::CLIENT_EXECUTE_COMMAND;
+use crate::{constant::CLIENT_EXECUTE_COMMAND, logger::log};
 
 #[derive(Debug, Clone)]
 /// Represents a SQL AST (Abstract Syntax Tree).
@@ -119,12 +120,45 @@ impl SqlParser {
 
         // skip errors
         let _ = tokens.tokenize_with_location_into_buf(&mut vals);
+        let mut ast =
+            sqlparser::parser::Parser::new(&self.dialect).with_tokens_with_locations(vals);
+        let mut stmts = Vec::new();
+        let mut expecting_statement_delimiter = false;
+        loop {
+            while ast.consume_token(&sqlparser::tokenizer::Token::SemiColon) {
+                expecting_statement_delimiter = false;
+            }
+            match ast.peek_token().token {
+                sqlparser::tokenizer::Token::EOF => break,
+                // end of statement
+                sqlparser::tokenizer::Token::Word(word) => {
+                    if expecting_statement_delimiter
+                        && word.keyword == sqlparser::keywords::Keyword::END
+                    {
+                        break;
+                    }
+                }
+                _ => {}
+            }
 
-        let ast = sqlparser::parser::Parser::new(&self.dialect)
-            .with_tokens_with_locations(vals)
-            .parse_statements()?;
+            match ast.parse_statement() {
+                // 解析成功，继续
+                Ok(statement) => {
+                    stmts.push(statement);
+                    expecting_statement_delimiter = true;
+                }
+                Err(err) => {
+                    // 解析错误，跳过
+                    log(
+                        MessageType::ERROR,
+                        format!("Failed to parse SQL statement: {}", err),
+                    );
+                    break;
+                }
+            }
+        }
         Ok(SqlAst {
-            statements: ast,
+            statements: stmts,
             document: sql.to_string(),
         })
     }
