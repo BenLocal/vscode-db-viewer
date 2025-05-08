@@ -23,3 +23,4 @@ sqlx = { version = "0.8.5", features = [
 once_cell = "1.18"
 base64 = "0.22"
 chrono = { version = "0.4", features = ["serde"] }
+openssl = { version = "0.10", features = ["vendored"] }

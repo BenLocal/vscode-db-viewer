@@ -7,7 +7,10 @@ use crate::constant::CLIENT_EXECUTE_COMMAND;
 
 #[derive(Debug, Clone)]
 /// Represents a SQL AST (Abstract Syntax Tree).
-pub struct SqlAst(Vec<sqlparser::ast::Statement>);
+pub struct SqlAst {
+    pub statements: Vec<sqlparser::ast::Statement>,
+    pub document: String,
+}
 
 pub enum CompletionContext {
     None,
@@ -18,36 +21,27 @@ pub enum CompletionContext {
 impl SqlAst {
     pub fn code_lens(&self) -> anyhow::Result<Option<Vec<CodeLens>>> {
         let mut code_lens = vec![];
-        for statement in &self.0 {
-            match statement {
-                sqlparser::ast::Statement::Query(_)
-                | sqlparser::ast::Statement::Insert(_)
-                | sqlparser::ast::Statement::Update { .. }
-                | sqlparser::ast::Statement::Delete(_)
-                | sqlparser::ast::Statement::CreateTable { .. } => {
-                    let command = Command {
-                        title: "😼 Run SQL".to_string(),
-                        command: CLIENT_EXECUTE_COMMAND.to_string(),
-                        // 将SQL语句作为参数传递给命令
-                        arguments: Some(vec![serde_json::to_value(statement.to_string()).unwrap()]),
-                    };
-                    code_lens.push(CodeLens {
-                        range: Range {
-                            start: Position {
-                                line: (statement.span().start.line - 1) as u32,
-                                character: 0,
-                            },
-                            end: Position {
-                                line: (statement.span().end.line - 1) as u32,
-                                character: statement.span().end.column as u32,
-                            },
-                        },
-                        command: Some(command),
-                        data: None,
-                    });
-                }
-                _ => {}
-            }
+        for statement in &self.statements {
+            let command = Command {
+                title: "😼 Run SQL".to_string(),
+                command: CLIENT_EXECUTE_COMMAND.to_string(),
+                // 将SQL语句作为参数传递给命令
+                arguments: Some(vec![serde_json::to_value(statement.to_string()).unwrap()]),
+            };
+            code_lens.push(CodeLens {
+                range: Range {
+                    start: Position {
+                        line: (statement.span().start.line - 1) as u32,
+                        character: 0,
+                    },
+                    end: Position {
+                        line: (statement.span().end.line - 1) as u32,
+                        character: statement.span().end.column as u32,
+                    },
+                },
+                command: Some(command),
+                data: None,
+            });
         }
 
         Ok(Some(code_lens))
@@ -119,8 +113,20 @@ impl SqlParser {
     }
 
     pub(crate) fn parse(&self, sql: &str) -> anyhow::Result<SqlAst> {
-        let ast = sqlparser::parser::Parser::parse_sql(&self.dialect, sql)?;
-        Ok(SqlAst(ast))
+        let mut tokens =
+            sqlparser::tokenizer::Tokenizer::new(&self.dialect, sql).with_unescape(true);
+        let mut vals: Vec<sqlparser::tokenizer::TokenWithSpan> = vec![];
+
+        // skip errors
+        let _ = tokens.tokenize_with_location_into_buf(&mut vals);
+
+        let ast = sqlparser::parser::Parser::new(&self.dialect)
+            .with_tokens_with_locations(vals)
+            .parse_statements()?;
+        Ok(SqlAst {
+            statements: ast,
+            document: sql.to_string(),
+        })
     }
 }
 

@@ -6,15 +6,14 @@ use std::collections::HashMap;
 use std::sync::Arc;
 
 use command::Command;
-use parser::{CompletionContext, SqlAst, SqlParser};
+use parser::{SqlAst, SqlParser};
 use serde_json::Value;
 use tokio::sync::RwLock;
 use tokio_util::sync::CancellationToken;
 use tower_lsp::jsonrpc::{Error, ErrorCode, Result};
 use tower_lsp::lsp_types::{
-    CodeLens, CodeLensOptions, CodeLensParams, CompletionOptions, CompletionParams,
-    ExecuteCommandOptions, ExecuteCommandParams, InitializedParams, MessageType,
-    ServerCapabilities, TextDocumentSyncKind,
+    CodeLens, CodeLensOptions, CodeLensParams, CompletionOptions, ExecuteCommandOptions,
+    ExecuteCommandParams, InitializedParams, MessageType, ServerCapabilities, TextDocumentSyncKind,
 };
 use tower_lsp::{Client, LspService};
 use tower_lsp::{
